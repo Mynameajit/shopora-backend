@@ -4,7 +4,7 @@ import { isAdmin, isAuthenticated } from "../middlewares/authMiddleware.js";
 
 const router = Router()
 
-router.get('/all',isAuthenticated,isAdmin, allUsers)
+router.get('/all',isAuthenticated, allUsers)
 router.get('/me',isAuthenticated, getMyProfile)
 
 export default router;

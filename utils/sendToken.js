@@ -6,23 +6,22 @@ const sendToken = (user, statusCode, res, message) => {
     // console.log("jwt token", token)
     //options for cookies
     let options = {
-        expires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+        expires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
         httpOnly: true,
-        secure: false,
-        sameSite: "lax"
+        secure: true,           // ✅ required for HTTPS (Vercel/Render are HTTPS)
+        sameSite: "None",       // ✅ required for cross-site cookies
     };
 
 
-    res.status(statusCode).cookie('token', token, options).json({
+    res.status(statusCode).cookie('token', token, {
+        httpOnly: true,
+        secure: true,           // ✅ For HTTPS (vercel/render)
+        sameSite: "none",       // ✅ Required for cross-origin
+        expires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+    })
+    res.status(200).json({
         success: true,
-        message,
-        user: {
-            name: user.name,
-            email: user.email,
-            role: user.role,
-            createdAt: user.createdAt,
-            updatedAt: user.updatedAt
-        }
+        user,
     });
 }
 
