@@ -1,64 +1,64 @@
+import express from "express";
+import cors from "cors";
+import cookieParser from "cookie-parser";
+import dotenv from "dotenv";
+import connectDB from "./config/DB.js";
 
-import cookieParser from 'cookie-parser';
-import cors from 'cors';
-import dotenv from 'dotenv';
-import express from 'express';
+import AuthRouter from "./routes/Auth.Route.js";
+import UserRoute from "./routes/User.Route.js";
+import ShopRoute from "./routes/shop.Route.js";
+import ItemRoute from "./routes/item.Route.js";
+import CartRoute from "./routes/cart.Route.js";
+import PaymentRoute from "./routes/payment.Routes.js";
+import OrderRoute from "./routes/order.Route.js";
 
-import { errorMiddleware } from './utils/error.js';
-import ConnectedDB from './config/mongoDB.js';
-import addressRoutes from './Routes/addressRoutes.js';
-import authRoute from './Routes/authRoute.js';
-import productRouter from './Routes/ProductRoute.js';
-import userRouter from './Routes/userRoute.js';
-import orderRouter from './Routes/orderRoute.js';
-import paymentRoute from './Routes/paymentRoutes.js';
-import contactRoute from './Routes/contactRoutes.js';
-import { saveProduct } from './seed/seeds.js';
-
-// Initialize app
+dotenv.config();
 const app = express();
+const port = process.env.PORT || 8000;
 
-// Environment variables
-dotenv.config()
-// connected DB
-await ConnectedDB();
+// Middlewares
+app.use(express.json());
 
-// await saveProduct()
-// Middleware
-app.use(cors({
-    origin: [
-        "http://localhost:5173",
-        "https://shopora-six.vercel.app"      // ✅ Deployed
-    ],
-    credentials: true
-}));
-app.use(express.json())
+const allowedOrigins = [
+  process.env.FRONTEND_URL,
+  "http://localhost:5173",
+  "http://localhost:3000",
+];
+
+app.use(
+  cors({
+    origin: function (origin, callback) {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
+    credentials: true,
+  })
+);
+
 app.use(cookieParser());
 
-app.get('/', (req, res) => {
-    res.status(200).json({
-        success: true,
-        message: "Welcome to shopOra Api"
-    })
-})
-// Use the route
-app.use('/api/auth', authRoute)
-app.use('/api/address', addressRoutes);
-app.use('/api/product', productRouter)
-app.use('/api/user', userRouter)
-app.use('/api/order', orderRouter)
-app.use('/api/payment', paymentRoute)
-app.use('/api/contact', contactRoute)
+// Routes
+app.use("/api/auth", AuthRouter);
+app.use("/api/user", UserRoute);
+app.use("/api/shop", ShopRoute);
+app.use("/api/item", ItemRoute);
+app.use("/api/cart", CartRoute);
+app.use("/api/payment", PaymentRoute);
+app.use("/api/order", OrderRoute);
 
+// Server Start
+const startServer = async () => {
+  try {
+    await connectDB();
+    app.listen(port, () => {
+      console.log(`🚀 Server running on port ${port}`);
+    });
+  } catch (error) {
+    console.error("❌ DB connection failed", error);
+  }
+};
 
-
-
-
-app.use(errorMiddleware)
-// Start Server
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
-})
-
-
+startServer();
